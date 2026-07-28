@@ -193,34 +193,44 @@ function getLoginAdmin($data)
 {
     include 'connection.php';
 
-    $email = $data['email'];
-    $password = $data['password'];
-
-    $loginAdmin = "SELECT * FROM employee WHERE email = '$email' AND password ='$password'";
-    $countloginAdmin = mysqli_query($con, $loginAdmin);
-    $counts_loginAdmin = mysqli_num_rows($countloginAdmin);
-
-    $loginCustomer = "SELECT * FROM customer WHERE email = '$email' AND password ='$password'";
-    $count_loginCustomer = mysqli_query($con, $loginCustomer);
-    $counts_loginCustomer = mysqli_num_rows($count_loginCustomer);
+    $email    = $data['email'] ?? '';
+    $password = $data['password'] ?? '';
 
     $value = "";
 
-    if ($counts_loginAdmin > 0) {
+    // employee / admin lookup
+    $sql  = "SELECT * FROM employee WHERE email = ? AND is_deleted = 0";
+    $stmt = mysqli_prepare($con, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $email);
+    mysqli_stmt_execute($stmt);
+    $emp = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+    mysqli_stmt_close($stmt);
+
+    // TODO Phase 2: replace with password_verify($password, $emp['password'])
+    if ($emp !== null && $emp['password'] === $password) {
 
         $value = 'admin';
+        $_SESSION['admin'] = $emp['email'];
+        // TODO Phase 3: $_SESSION['role'] = 'admin';
 
-        $res = checkemployee($email);
-        $row = mysqli_fetch_assoc($res);
-        $_SESSION['admin'] = $row['email'];
-    } else if ($counts_loginCustomer > 0) {
+    } else {
 
-        $value = 'customer';
+        // --- Customer lookup ---
+        $sql  = "SELECT * FROM customer WHERE email = ? AND is_deleted = 0";
+        $stmt = mysqli_prepare($con, $sql);
+        mysqli_stmt_bind_param($stmt, "s", $email);
+        mysqli_stmt_execute($stmt);
+        $cus = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+        mysqli_stmt_close($stmt);
 
-        $res = checkCustomerByEmail($email);
-        $row = mysqli_fetch_assoc($res);
-        $_SESSION['customer'] = $row['customer_id'];
+        // TODO Phase 2: replace with password_verify($password, $cus['password'])
+        if ($cus !== null && $cus['password'] === $password) {
+            $value = 'customer';
+            $_SESSION['customer'] = $cus['customer_id'];
+            // TODO Phase 3: $_SESSION['role'] = 'customer';
+        }
     }
+
     echo $value;
 }
 
