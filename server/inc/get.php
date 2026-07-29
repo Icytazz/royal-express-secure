@@ -239,9 +239,13 @@ function getLoginAdmin($data)
     // Constant-time comparison against the stored bcrypt hash.
     if ($emp !== null && password_verify($password, $emp['password'])) {
 
+        // A new session id on privilege change prevents session fixation: an
+        // id planted before login cannot be reused once authenticated.
+        session_regenerate_id(true);
+
         $value = 'admin';
         $_SESSION['admin'] = $emp['email'];
-        // TODO Phase 3: $_SESSION['role'] = 'admin';
+        $_SESSION['role']  = 'admin';
 
     } else {
 
@@ -254,9 +258,12 @@ function getLoginAdmin($data)
         mysqli_stmt_close($stmt);
 
         if ($cus !== null && password_verify($password, $cus['password'])) {
+
+            session_regenerate_id(true);
+
             $value = 'customer';
             $_SESSION['customer'] = $cus['customer_id'];
-            // TODO Phase 3: $_SESSION['role'] = 'customer';
+            $_SESSION['role']     = 'customer';
         }
     }
 

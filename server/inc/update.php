@@ -12,6 +12,10 @@ function updateDataTable($data)
 
     assertIdentifiers('update', $table, $keyCol, $field);
 
+    // Object-level check: a customer may only modify their own record.
+    require_once __DIR__ . '/authorize.php';
+    requireOwnership($table, $id);
+
     // Single chokepoint for credential writes. Both change-password flows post
     // here with field=password, and so would any future caller, so hashing is
     // applied at the write itself rather than at each call site.

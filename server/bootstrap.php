@@ -10,6 +10,15 @@
  */
 
 if (session_id() == '') {
+    // HttpOnly keeps the cookie out of reach of JavaScript, limiting session
+    // theft via XSS. SameSite=Strict stops the browser attaching it to
+    // cross-site requests, which blocks CSRF against these endpoints.
+    // 'secure' must become true once the application is served over HTTPS.
+    session_set_cookie_params([
+        'httponly' => true,
+        'samesite' => 'Strict',
+        'secure'   => false,
+    ]);
     session_start();
 }
 

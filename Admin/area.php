@@ -1,9 +1,9 @@
+<?php require_once __DIR__ . '/checkAdmin.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <?php include 'pages/head.php'; ?>
 <?php include 'admin.php'; ?>
-<?php include 'checkAdmin.php'; ?>
 
 <body>
     <div id="app">

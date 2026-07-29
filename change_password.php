@@ -1,7 +1,7 @@
+<?php require_once __DIR__ . '/auth.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <?php include 'pages/head.php'; ?>
-<?php include 'auth.php'; ?>
 
 <body data-spy="scroll" data-target=".site-navbar-target" data-offset="200">
 

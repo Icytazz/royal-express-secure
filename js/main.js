@@ -304,16 +304,36 @@ jQuery(document).ready(function($) {
   // navigation
   var OnePageNavigation = function() {
     var navToggler = $('.site-menu-toggle');
-   	$("body").on("click", "#site-navbar .site-menu li a[href^='#'], .smoothscroll[href^='#'], .site-mobile-menu .site-nav-wrap li a", function(e) {
-      e.preventDefault();
+   	$("body").on("click", "#site-navbar .site-menu li a, .smoothscroll[href^='#'], .site-mobile-menu .site-nav-wrap li a", function(e) {
       var hash = this.hash;
-      
-        $('html, body').animate({
 
-          scrollTop: $(hash).offset().top
-        }, 400, 'easeInOutExpo', function(){
-          window.location.hash = hash;
-        });
+      // Only intercept in-page anchors. The mobile menu also holds ordinary
+      // links (Profile, Tracking, Logout, Request); preventing their default
+      // action left them dead, and $('').offset() threw before the animation.
+      if (!hash) {
+        return;
+      }
+
+      var $target = $(hash);
+
+      // Anchor points at a section that does not exist on this page - send the
+      // browser to the home page and let the fragment resolve there.
+      if (!$target.length) {
+        e.preventDefault();
+        window.location.href = 'index.php' + hash;
+        return;
+      }
+
+      e.preventDefault();
+
+      $('html, body').animate({
+        scrollTop: $target.offset().top
+      }, 400, 'easeInOutExpo', function(){
+        window.location.hash = hash;
+      });
+
+      // Close the mobile menu once a section has been chosen.
+      $('body').removeClass('offcanvas-menu');
 
     });
 

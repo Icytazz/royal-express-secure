@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/checkAdmin.php'; ?>
 <?php
 require('assets/plugin/pdf/fpdf.php');
 include('../server/bootstrap.php');
