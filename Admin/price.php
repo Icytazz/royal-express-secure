@@ -145,35 +145,35 @@
 
 
                                         <tr>
-                                            <td><select onchange="updateData(this, '<?php echo $price_id; ?>', 'start_area', 'price_table', 'price_id');" id="start_area <?php echo $price_id; ?>" class='form-control norad tx12' name="start_area" type='text'>
+                                            <td><select onchange="updateData(this, '<?php echo e($price_id); ?>', 'start_area', 'price_table', 'price_id');" id="start_area <?php echo e($price_id); ?>" class='form-control norad tx12' name="start_area" type='text'>
                                                     <?php
                                                     $getallCat = getAllArea();
                                                     while ($row2 = mysqli_fetch_assoc($getallCat)) { ?>
 
-                                                        <option value="<?php echo $row2['area_id']; ?>" <?php if ($row['start_area'] == $row2['area_id']) echo "selected"; ?>>
-                                                            <?php echo $row2['area_name']; ?></option>
+                                                        <option value="<?php echo e($row2['area_id']); ?>" <?php if ($row['start_area'] == $row2['area_id']) echo "selected"; ?>>
+                                                            <?php echo e($row2['area_name']); ?></option>
                                                     <?php } ?>
                                                 </select>
                                             </td>
 
-                                            <td><select onchange="updateData(this, '<?php echo $price_id; ?>', 'end_area', 'price_table', 'price_id');" id="end_area <?php echo $price_id; ?>" class='form-control norad tx12' name="end_area" type='text'>
+                                            <td><select onchange="updateData(this, '<?php echo e($price_id); ?>', 'end_area', 'price_table', 'price_id');" id="end_area <?php echo e($price_id); ?>" class='form-control norad tx12' name="end_area" type='text'>
                                                     <?php
                                                     $getallCat = getAllArea();
                                                     while ($row2 = mysqli_fetch_assoc($getallCat)) { ?>
 
-                                                        <option value="<?php echo $row2['area_id']; ?>" <?php if ($row['end_area'] == $row2['area_id']) echo "selected"; ?>>
-                                                            <?php echo $row2['area_name']; ?></option>
+                                                        <option value="<?php echo e($row2['area_id']); ?>" <?php if ($row['end_area'] == $row2['area_id']) echo "selected"; ?>>
+                                                            <?php echo e($row2['area_name']); ?></option>
                                                     <?php } ?>
                                                 </select>
                                             </td>
 
                                             <td>
-                                                <input type="number" id="price" name="price" required="required" onchange="updateData(this, '<?php echo $price_id; ?>', 'price', 'price_table', 'price_id');" value="<?php echo $row['price']; ?>" class="form-control col-md-7 col-xs-12">
+                                                <input type="number" id="price" name="price" required="required" onchange="updateData(this, '<?php echo e($price_id); ?>', 'price', 'price_table', 'price_id');" value="<?php echo e($row['price']); ?>" class="form-control col-md-7 col-xs-12">
                                             </td>
-                                            <td><?php echo $row['date_updated']; ?></td>
+                                            <td><?php echo e($row['date_updated']); ?></td>
                                             <td>
 
-                                                <button type="button" onclick="deleteData(<?php echo $row['price_id']; ?>, 'price_table', 'price_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
+                                                <button type="button" onclick="deleteData(<?php echo e($row['price_id']); ?>, 'price_table', 'price_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
                                                 </button>
 
                                             </td>

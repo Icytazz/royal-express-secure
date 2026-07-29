@@ -143,10 +143,10 @@
 
 
                                         <tr>
-                                            <td><?php echo $row['area_name']; ?></td>
+                                            <td><?php echo e($row['area_name']); ?></td>
                                             <td>
 
-                                                <button type="button" onclick="deleteData(<?php echo $row['area_id']; ?>, 'area', 'area_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
+                                                <button type="button" onclick="deleteData(<?php echo e($row['area_id']); ?>, 'area', 'area_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
                                                 </button>
 
                                             </td>

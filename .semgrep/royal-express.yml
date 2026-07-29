@@ -70,9 +70,12 @@ rules:
       confidence: HIGH
     patterns:
       - pattern: header($LOC);
+      # Match the Location header specifically. A bare "location" substring also
+      # matches Permissions-Policy: geolocation=(), which is not a redirect;
+      # requiring the colon distinguishes the header name from the token.
       - metavariable-regex:
           metavariable: $LOC
-          regex: (?i).*location.*
+          regex: '(?i)location\s*:'
       # pattern-not-inside, not pattern-not: pattern-not only filters a match
       # occupying the SAME range, and the main pattern matches one statement
       # while the exclusion spans two. Using pattern-not here silently fails to

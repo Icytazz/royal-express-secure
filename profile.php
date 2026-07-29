@@ -59,7 +59,7 @@
 
 
 
-    <div class="site-blocks-cover overlay" style=" height: 100px; background-image: url(<?php echo $subheader_src; ?>);"
+    <div class="site-blocks-cover overlay" style=" height: 100px; background-image: url(<?php echo e($subheader_src); ?>);"
         data-aos="fade" data-stellar-background-ratio="0.5" id="section-home">
         <div class="container">
             <div class="row align-items-center justify-content-center text-center">
@@ -97,35 +97,35 @@ $customer_id = $row['customer_id']; ?>
                                     <h1 class="font-weight-normal text-secondary m-0 mr-3"></h1>
                                     <div class="d-flex flex-column">
                                         <h4 class="text-info">Full Name</h4>
-                                        <p class="m-0 text-white"><?php echo $row['name']; ?></p>
+                                        <p class="m-0 text-white"><?php echo e($row['name']); ?></p>
                                     </div>
                                 </div>
                                 <div class="d-inline-flex border border-secondary p-2 mb-4">
                                     <h1 class="font-weight-normal text-secondary m-0 mr-3"></h1>
                                     <div class="d-flex flex-column">
                                         <h4 class="text-info">Email</h4>
-                                        <p class="m-0 text-white"><?php echo $row['email']; ?></p>
+                                        <p class="m-0 text-white"><?php echo e($row['email']); ?></p>
                                     </div>
                                 </div>
                                 <div class="d-inline-flex border border-secondary p-2 mb-4">
                                     <h1 class="font-weight-normal text-secondary m-0 mr-3"></h1>
                                     <div class="d-flex flex-column">
                                         <h4 class="text-info">Phone Number</h4>
-                                        <p class="m-0 text-white"><?php echo $row['phone']; ?></p>
+                                        <p class="m-0 text-white"><?php echo e($row['phone']); ?></p>
                                     </div>
                                 </div>
                                 <div class="d-inline-flex border border-secondary p-2 mb-4">
                                     <h1 class="font-weight-normal text-secondary m-0 mr-3"></h1>
                                     <div class="d-flex flex-column">
                                         <h4 class="text-info">Address</h4>
-                                        <p class="m-0 text-white"><?php echo $row['address']; ?></p>
+                                        <p class="m-0 text-white"><?php echo e($row['address']); ?></p>
                                     </div>
                                 </div>
                                 <div class="d-inline-flex border border-secondary p-2 mb-4">
                                     <h1 class="font-weight-normal text-secondary m-0 mr-3"></h1>
                                     <div class="d-flex flex-column">
                                         <h4 class="text-info">NIC</h4>
-                                        <p class="m-0 text-white"><?php echo $row['nic']; ?></p>
+                                        <p class="m-0 text-white"><?php echo e($row['nic']); ?></p>
                                     </div>
                                 </div>
                                 <div class="d-inline-flex border border-secondary p-2 mb-4">
@@ -153,54 +153,54 @@ $customer_id = $row['customer_id']; ?>
                                             <a href="change_password.php" class="border px-3 p-1 add-experience"><i
                                                     class="fa fa-lock"></i>&nbsp;Change Password</a>
                                             <button class="border px-3 p-1 add-experience"
-                                                onclick="deleteDataFromHome(<?php echo $row['customer_id']; ?>, 'customer', 'customer_id')"><i
+                                                onclick="deleteDataFromHome(<?php echo e($row['customer_id']); ?>, 'customer', 'customer_id')"><i
                                                     class="fa fa-trash"></i>&nbsp;Delete</button>
                                         </div><br>
                                         <div class="row mt-2">
                                             <div class="col-md-12"><label class="labels">Name</label>
                                                 <input type="text"
-                                                    onchange='updateDataFromHome(this, "<?php echo $customer_id; ?>","name", "customer", "customer_id")'
+                                                    onchange='updateDataFromHome(this, "<?php echo e($customer_id); ?>","name", "customer", "customer_id")'
                                                     class="form-control" id="name" placeholder="Your name"
-                                                    value="<?php echo $row['name']; ?>">
+                                                    value="<?php echo e($row['name']); ?>">
                                             </div>
 
                                         </div>
                                         <div class="row mt-3">
                                             <div class="col-md-12"><label class="labels">Mobile Number</label>
                                                 <input type="text"
-                                                    onchange='updateDataFromHome(this, "<?php echo $customer_id; ?>","phone", "customer", "customer_id")'
+                                                    onchange='updateDataFromHome(this, "<?php echo e($customer_id); ?>","phone", "customer", "customer_id")'
                                                     class="form-control" id="phone" placeholder="enter phone number"
-                                                    value="<?php echo $row['phone']; ?>">
+                                                    value="<?php echo e($row['phone']); ?>">
                                             </div>
 
 
                                             <div class="col-md-12"><label class="labels">Address </label><input
                                                     type="text"
-                                                    onchange='updateDataFromHome(this, "<?php echo $customer_id; ?>","address", "customer", "customer_id")'
+                                                    onchange='updateDataFromHome(this, "<?php echo e($customer_id); ?>","address", "customer", "customer_id")'
                                                     class="form-control" id="address" placeholder="enter address"
-                                                    value="<?php echo $row['address']; ?>"></div>
+                                                    value="<?php echo e($row['address']); ?>"></div>
 
                                             <div class="col-md-12"><label class="labels">NIC</label>
                                                 <input type="text" 
-                                                    onchange='updateDataFromHome(this, "<?php echo $customer_id; ?>","nic", "customer", "customer_id")'
+                                                    onchange='updateDataFromHome(this, "<?php echo e($customer_id); ?>","nic", "customer", "customer_id")'
                                                     id="nic" class="form-control" placeholder="Enter NIC"
-                                                    value="<?php echo $row['nic']; ?>">
+                                                    value="<?php echo e($row['nic']); ?>">
                                             </div>
 
                                             <div class="col-md-12">
                                                 <label class="labels">Email ID</label>
                                                 <input type="email"
-                                                    onchange='updateDataFromHome(this, "<?php echo $customer_id; ?>","email", "customer", "customer_id")'
+                                                    onchange='updateDataFromHome(this, "<?php echo e($customer_id); ?>","email", "customer", "customer_id")'
                                                     id="email" class="form-control" placeholder="Enter Email Address"
-                                                    value="<?php echo $row['email']; ?>">
+                                                    value="<?php echo e($row['email']); ?>">
                                             </div>
 
                                         </div>
                                         <div class="row mt-12">
                                             <div class="col-md-12"><label class="labels">Gender</label>
                                                 <select
-                                                    onchange='updateDataFromHome(this, "<?php echo $customer_id; ?>","gender", "customer", "customer_id")'
-                                                    id="gender <?php echo $customer_id; ?>"
+                                                    onchange='updateDataFromHome(this, "<?php echo e($customer_id); ?>","gender", "customer", "customer_id")'
+                                                    id="gender <?php echo e($customer_id); ?>"
                                                     class='form-control norad tx12' name="gender" type='text'>
                                                     <option value="1"
                                                         <?php if ($row['gender']=="1") echo "selected"; ?>>

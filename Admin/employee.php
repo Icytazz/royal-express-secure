@@ -169,19 +169,19 @@
                                         <tr>
 
                                             <td>
-                                                <?php echo $row['name']; ?>
+                                                <?php echo e($row['name']); ?>
                                             </td>
                                             <td>
-                                                <?php echo $row['email']; ?>
+                                                <?php echo e($row['email']); ?>
                                             </td>
                                             <td>
-                                                <?php echo $row['phone']; ?>
+                                                <?php echo e($row['phone']); ?>
                                             </td>
                                             <td>
-                                                <?php echo $row['nic']; ?>
+                                                <?php echo e($row['nic']); ?>
                                             </td>
                                             <td>
-                                                <?php echo $row['address']; ?>
+                                                <?php echo e($row['address']); ?>
                                             </td>
                                             <td>
                                                 <?php $getCat =  getBranchByID($row['branch_id']);
@@ -196,10 +196,10 @@
                                                     echo "Female";
                                                 } ?>
                                             </td>
-                                            <td> <a href="empolyee_edit.php?emp_id=<?php echo $emp_id; ?>" class="btn btn-darkblue"> <i class="fa-solid fa-edit"></i>
+                                            <td> <a href="empolyee_edit.php?emp_id=<?php echo e($emp_id); ?>" class="btn btn-darkblue"> <i class="fa-solid fa-edit"></i>
                                                 </a>
                                                 <?php if (isset($_SESSION['admin']) && $_SESSION['admin'] == 'admin') : ?>
-                                                    <button type="button" onclick="deleteData(<?php echo $row['emp_id']; ?>,'employee', 'emp_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
+                                                    <button type="button" onclick="deleteData(<?php echo e($row['emp_id']); ?>,'employee', 'emp_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
                                                     </button>
                                                 <?php endif; ?>
 

@@ -58,7 +58,7 @@
 
 
 
-    <div class="site-blocks-cover overlay" style=" height: 100px; background-image: url(<?php echo $subheader_src; ?>);" data-aos="fade" data-stellar-background-ratio="0.5" id="section-home">
+    <div class="site-blocks-cover overlay" style=" height: 100px; background-image: url(<?php echo e($subheader_src); ?>);" data-aos="fade" data-stellar-background-ratio="0.5" id="section-home">
         <div class="container">
             <div class="row align-items-center justify-content-center text-center">
 
@@ -159,7 +159,7 @@
                                             <div class="col-md-6">
                                                 <input type="text" disabled name="total" id="total" class="form-control">
                                                 <input type="hidden" name="total_fee" id="total_fee" class="form-control">
-                                                <input type="hidden" name="customer_id" id="customer_id" value="<?php echo $_SESSION['customer']; ?>" class="form-control">
+                                                <input type="hidden" name="customer_id" id="customer_id" value="<?php echo e($_SESSION['customer']); ?>" class="form-control">
                                             </div>
                                         </div>
 

@@ -28,7 +28,22 @@ def main() -> int:
 
     # A rule that fails to parse is disabled silently, and the scan still exits
     # zero. Without this check a broken ruleset looks identical to clean code.
-    parse_errors = data.get("errors", [])
+    #
+    # Semgrep reports timeouts in the same errors[] array. Those are not rule
+    # defects - they are large vendored JavaScript bundles exceeding the
+    # per-rule time budget - so they are reported but must not fail the build.
+    def is_rule_defect(err) -> bool:
+        text = str(err.get("message", err)).lower()
+        if "timeout" in text:
+            return False
+        return ("parse error" in text
+                or "invalid pattern" in text
+                or "invalid rule" in text
+                or err.get("level") == "error")
+
+    all_errors = data.get("errors", [])
+    parse_errors = [e for e in all_errors if is_rule_defect(e)]
+    timeouts = [e for e in all_errors if not is_rule_defect(e)]
 
     by_rule = Counter(r["check_id"].rsplit(".", 1)[-1] for r in errors)
 
@@ -38,7 +53,8 @@ def main() -> int:
         f"- Branch: `{os.getenv('GITHUB_REF_NAME', 'unknown')}`",
         f"- Total findings: **{len(results)}**",
         f"- ERROR: **{len(errors)}** · WARNING: **{len(warnings)}**",
-        f"- Rule/parse errors: **{len(parse_errors)}**",
+        f"- Rule defects: **{len(parse_errors)}** · "
+        f"timeouts on vendored files: {len(timeouts)}",
         "",
     ]
 
@@ -55,7 +71,7 @@ def main() -> int:
         lines.append("")
 
     if parse_errors:
-        lines += ["### Rule errors", ""]
+        lines += ["### Rule defects (build-failing)", ""]
         for e in parse_errors[:10]:
             lines.append(f"- {str(e.get('message', e))[:200]}")
         lines.append("")

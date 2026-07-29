@@ -128,14 +128,14 @@
                                     while ($row = mysqli_fetch_assoc($getall)) { ?>
                                         <tr>
 
-                                            <td><?php echo $row['name']; ?></td>
-                                            <td><?php echo $row['email']; ?></td>
-                                            <td><?php echo $row['subject']; ?></td>
-                                            <td><?php echo $row['message']; ?></td>
-                                            <td><?php echo $row['date_updated']; ?></td>
+                                            <td><?php echo e($row['name']); ?></td>
+                                            <td><?php echo e($row['email']); ?></td>
+                                            <td><?php echo e($row['subject']); ?></td>
+                                            <td><?php echo e($row['message']); ?></td>
+                                            <td><?php echo e($row['date_updated']); ?></td>
                                             <td>
 
-                                                <button type="button" onclick="permenantdeleteData(<?php echo $row['contact_id']; ?>, 'contact', 'contact_id' )" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
+                                                <button type="button" onclick="permenantdeleteData(<?php echo e($row['contact_id']); ?>, 'contact', 'contact_id' )" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
                                                 </button>
                                             </td>
                                         </tr>

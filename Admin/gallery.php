@@ -138,10 +138,10 @@
 
 
                                             <tr>
-                                                <td><img width="500px" src='<?php echo $img_src; ?>'></td>
+                                                <td><img width="500px" src='<?php echo e($img_src); ?>'></td>
                                                 <td>
 
-                                                    <button type="button" onclick="permenantdeleteData(<?php echo $row['gallery_id']; ?>, 'gallery', 'gallery_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
+                                                    <button type="button" onclick="permenantdeleteData(<?php echo e($row['gallery_id']); ?>, 'gallery', 'gallery_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
                                                     </button>
 
                                                 </td>

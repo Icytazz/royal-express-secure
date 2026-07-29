@@ -5,7 +5,7 @@
                     <div class="row">
                         <div class="col-md-6 mr-auto text-center">
                             <h2 class="footer-heading mb-4">About Us</h2>
-                            <p><?php echo $res['about_desc']; ?></p>
+                            <p><?php echo e($res['about_desc']); ?></p>
                         </div>
 
                         <div class="col-md-3 text-center">
@@ -19,9 +19,9 @@
                         </div>
                         <div class="col-md-3 text-center">
                             <h2 class="footer-heading mb-4">Follow Us</h2>
-                            <a href="<?php echo $res['link_facebook']; ?>" class="pl-0 pr-3"><span class="icon-facebook"></span></a>
-                            <a href="<?php echo $res['link_twiiter']; ?>" class="pl-3 pr-3"><span class="icon-twitter"></span></a>
-                            <a href="<?php echo $res['link_instragram']; ?>" class="pl-3 pr-3"><span class="icon-instagram"></span></a>
+                            <a href="<?php echo e($res['link_facebook']); ?>" class="pl-0 pr-3"><span class="icon-facebook"></span></a>
+                            <a href="<?php echo e($res['link_twiiter']); ?>" class="pl-3 pr-3"><span class="icon-twitter"></span></a>
+                            <a href="<?php echo e($res['link_instragram']); ?>" class="pl-3 pr-3"><span class="icon-instagram"></span></a>
                         </div>
                     </div>
                 </div>

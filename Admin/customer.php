@@ -147,18 +147,18 @@
 
                                         <tr>
 
-                                            <td><?php echo $row['name']; ?></td>
-                                            <td><?php echo $row['email']; ?></td>
-                                            <td><?php echo $row['phone']; ?></td>
-                                            <td><?php echo $row['nic']; ?></td>
-                                            <td><?php echo $row['address']; ?></td>
+                                            <td><?php echo e($row['name']); ?></td>
+                                            <td><?php echo e($row['email']); ?></td>
+                                            <td><?php echo e($row['phone']); ?></td>
+                                            <td><?php echo e($row['nic']); ?></td>
+                                            <td><?php echo e($row['address']); ?></td>
                                             <td><?php if ($row['gender'] == "1") {
                                                     echo "Male";
                                                 } else {
                                                     echo "Female";
                                                 } ?>
                                             </td>
-                                            <td> <button type="button" onclick="deleteData(<?php echo $row['customer_id']; ?>,'customer', 'customer_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
+                                            <td> <button type="button" onclick="deleteData(<?php echo e($row['customer_id']); ?>,'customer', 'customer_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
                                                 </button>
 
                                             </td>

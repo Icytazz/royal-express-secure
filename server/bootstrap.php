@@ -11,6 +11,7 @@
 
 require_once __DIR__ . '/inc/env.php';
 require_once __DIR__ . '/inc/logger.php';
+require_once __DIR__ . '/inc/output.php';
 
 loadEnv(dirname(__DIR__) . '/.env');
 

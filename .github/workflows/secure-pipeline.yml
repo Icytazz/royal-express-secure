@@ -61,6 +61,8 @@ jobs:
       - name: Confirm both reports were written
         run: ls -la semgrep-results.json semgrep.sarif
 
+      # Requires code scanning to be available: free on public repositories,
+      # and on private ones only with GitHub Advanced Security.
       - name: Publish SARIF to the Security tab
         if: always()
         uses: github/codeql-action/upload-sarif@v3

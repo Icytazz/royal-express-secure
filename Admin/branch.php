@@ -142,10 +142,10 @@
 
 
                                         <tr>
-                                            <td><?php echo $row['branch_name']; ?></td>
+                                            <td><?php echo e($row['branch_name']); ?></td>
                                             <td>
 
-                                                <button type="button" onclick="deleteData(<?php echo $row['branch_id']; ?>, 'branch', 'branch_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
+                                                <button type="button" onclick="deleteData(<?php echo e($row['branch_id']); ?>, 'branch', 'branch_id')" class="btn btn-darkblue"> <i class="fa-solid fa-trash"></i>
                                                 </button>
 
                                             </td>

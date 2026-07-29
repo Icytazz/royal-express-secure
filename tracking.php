@@ -58,7 +58,7 @@
 
 
 
-    <div class="site-blocks-cover overlay" style=" height: 100px; background-image: url(<?php echo $subheader_src; ?>);" data-aos="fade" data-stellar-background-ratio="0.5" id="section-home">
+    <div class="site-blocks-cover overlay" style=" height: 100px; background-image: url(<?php echo e($subheader_src); ?>);" data-aos="fade" data-stellar-background-ratio="0.5" id="section-home">
         <div class="container">
             <div class="row align-items-center justify-content-center text-center">
 
@@ -96,15 +96,15 @@
                                 Orders /
                                 Tracking </header>
                             <div class="card-body">
-                                <h6>Traking ID: #<?php echo $row['request_id']; ?> </h6>
+                                <h6>Traking ID: #<?php echo e($row['request_id']); ?> </h6>
                                 <article class="card">
                                     <div class="card-body row">
 
                                         <div class="col"> <strong>Shipping Address:</strong>
-                                            <br><?php echo $row['red_address']; ?>
+                                            <br><?php echo e($row['red_address']); ?>
                                         </div>
                                         <div class="col"> <strong>Recever Mobile:</strong>
-                                            <br><?php echo $row['res_phone']; ?>
+                                            <br><?php echo e($row['res_phone']); ?>
                                         </div>
                                         <div class="col"> <strong>Current Status:</strong>
                                             <br>
@@ -121,16 +121,16 @@
                                             } ?>
                                         </div>
                                         <div class="col"> <strong>Requested Date:</strong>
-                                            <br><?php echo $row['date_updated']; ?>
+                                            <br><?php echo e($row['date_updated']); ?>
                                         </div>
                                     </div>
                                     <div class="card-body row">
 
                                         <div class="col"> <strong>Weight:</strong>
-                                            <br><?php echo $row['weight']; ?>
+                                            <br><?php echo e($row['weight']); ?>
                                         </div>
                                         <div class="col"> <strong>Sender Mobile:</strong>
-                                            <br><?php echo $row['sender_phone']; ?>
+                                            <br><?php echo e($row['sender_phone']); ?>
                                         </div>
                                         <div class="col"> <strong>Send Location</strong>
                                             <br>
@@ -185,7 +185,7 @@
                                     <?php if ($row['tracking_status'] == "1") { ?>
                                         <div class="col-md-3">
                                             <label for="tracking_status" class="form-label">Order Cancel</label>
-                                            <select onchange='updateDataFromHome(this, "<?php echo $request_id; ?>","tracking_status", "request", "request_id")' id="tracking_status <?php echo $request_id; ?>" class='form-control norad tx12' name="tracking_status" type='text'>
+                                            <select onchange='updateDataFromHome(this, "<?php echo e($request_id); ?>","tracking_status", "request", "request_id")' id="tracking_status <?php echo e($request_id); ?>" class='form-control norad tx12' name="tracking_status" type='text'>
                                                 <option value="1">Please Select</option>
                                                 <option value="5" <?php if ($row['tracking_status'] == "5") echo "selected"; ?>>
                                                     Canceled
@@ -196,7 +196,7 @@
                                 </div>
                                 <div class="row mt-3">
 
-                                    <a href="admin/getbill.php?customer_id=<?php echo $_SESSION['customer']; ?>" class="btn btn-darkblue">Print <i class="fa-solid fa-file-pdf"></i></a>
+                                    <a href="admin/getbill.php?customer_id=<?php echo e($_SESSION['customer']); ?>" class="btn btn-darkblue">Print <i class="fa-solid fa-file-pdf"></i></a>
                                 </div>
                             </div>
                         </article>

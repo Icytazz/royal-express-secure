@@ -59,7 +59,7 @@
 
 
 
-    <div class="site-blocks-cover overlay" style=" height: 100px; background-image: url(<?php echo $subheader_src; ?>);"
+    <div class="site-blocks-cover overlay" style=" height: 100px; background-image: url(<?php echo e($subheader_src); ?>);"
         data-aos="fade" data-stellar-background-ratio="0.5" id="section-home">
         <div class="container">
             <div class="row align-items-center justify-content-center text-center">
@@ -97,35 +97,35 @@ $customer_id = $row['customer_id']; ?>
                                     <h1 class="font-weight-normal text-secondary m-0 mr-3"></h1>
                                     <div class="d-flex flex-column">
                                         <h4 class="text-info">Full Name</h4>
-                                        <p class="m-0 text-white"><?php echo $row['name']; ?></p>
+                                        <p class="m-0 text-white"><?php echo e($row['name']); ?></p>
                                     </div>
                                 </div>
                                 <div class="d-inline-flex border border-secondary p-2 mb-4">
                                     <h1 class="font-weight-normal text-secondary m-0 mr-3"></h1>
                                     <div class="d-flex flex-column">
                                         <h4 class="text-info">Email</h4>
-                                        <p class="m-0 text-white"><?php echo $row['email']; ?></p>
+                                        <p class="m-0 text-white"><?php echo e($row['email']); ?></p>
                                     </div>
                                 </div>
                                 <div class="d-inline-flex border border-secondary p-2 mb-4">
                                     <h1 class="font-weight-normal text-secondary m-0 mr-3"></h1>
                                     <div class="d-flex flex-column">
                                         <h4 class="text-info">Phone Number</h4>
-                                        <p class="m-0 text-white"><?php echo $row['phone']; ?></p>
+                                        <p class="m-0 text-white"><?php echo e($row['phone']); ?></p>
                                     </div>
                                 </div>
                                 <div class="d-inline-flex border border-secondary p-2 mb-4">
                                     <h1 class="font-weight-normal text-secondary m-0 mr-3"></h1>
                                     <div class="d-flex flex-column">
                                         <h4 class="text-info">Address</h4>
-                                        <p class="m-0 text-white"><?php echo $row['address']; ?></p>
+                                        <p class="m-0 text-white"><?php echo e($row['address']); ?></p>
                                     </div>
                                 </div>
                                 <div class="d-inline-flex border border-secondary p-2 mb-4">
                                     <h1 class="font-weight-normal text-secondary m-0 mr-3"></h1>
                                     <div class="d-flex flex-column">
                                         <h4 class="text-info">NIC</h4>
-                                        <p class="m-0 text-white"><?php echo $row['nic']; ?></p>
+                                        <p class="m-0 text-white"><?php echo e($row['nic']); ?></p>
                                     </div>
                                 </div>
                                 <div class="d-inline-flex border border-secondary p-2 mb-4">
@@ -165,7 +165,7 @@ $customer_id = $row['customer_id']; ?>
 
                                     <div class="col-md-12 mt-2">
                                         <input type="hidden" class="form-control" name="customer_id"
-                                            value="<?php echo $_SESSION['customer']; ?>" id="customer_id">
+                                            value="<?php echo e($_SESSION['customer']); ?>" id="customer_id">
                                     </div>
                                     <div class="col-md-12 mt-2">
                                         <button type="button" onclick="changePassword(this.form)"

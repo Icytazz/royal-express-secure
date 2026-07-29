@@ -58,15 +58,15 @@
 
 
 
-  <div class="site-blocks-cover overlay" style="background-image: url(<?php echo $header_src; ?>);" data-aos="fade" data-stellar-background-ratio="0.5" id="section-home">
+  <div class="site-blocks-cover overlay" style="background-image: url(<?php echo e($header_src); ?>);" data-aos="fade" data-stellar-background-ratio="0.5" id="section-home">
     <div class="container">
       <div class="row align-items-center justify-content-center text-center">
 
         <div class="col-md-8" data-aos="fade-up" data-aos-delay="400">
 
 
-          <h1 class="text-white font-weight-light text-uppercase font-weight-bold" data-aos="fade-up"><?php echo $res['header_title']; ?></h1>
-          <p class="mb-5" data-aos="fade-up" data-aos-delay="100"><?php echo $res['header_desc']; ?></p>
+          <h1 class="text-white font-weight-light text-uppercase font-weight-bold" data-aos="fade-up"><?php echo e($res['header_title']); ?></h1>
+          <p class="mb-5" data-aos="fade-up" data-aos-delay="100"><?php echo e($res['header_desc']); ?></p>
           <p data-aos="fade-up" data-aos-delay="200"><a href="request.php" class="btn btn-primary py-3 px-5 text-white">Get Started!</a></p>
 
         </div>
@@ -79,13 +79,13 @@
       <div class="row mb-5">
 
         <div class="col-md-5 ml-auto mb-5 order-md-2" data-aos="fade-up" data-aos-delay="100">
-          <img src="<?php echo $about_src; ?>" alt="Image" class="img-fluid rounded">
+          <img src="<?php echo e($about_src); ?>" alt="Image" class="img-fluid rounded">
         </div>
         <div class="col-md-6 order-md-1" data-aos="fade-up">
           <div class="text-left pb-1 border-primary mb-4">
-            <h2 class="text-primary"><?php echo $res['about_title']; ?></h2>
+            <h2 class="text-primary"><?php echo e($res['about_title']); ?></h2>
           </div>
-          <p><?php echo $res['about_desc']; ?></p>
+          <p><?php echo e($res['about_desc']); ?></p>
         </div>
 
       </div>
@@ -111,7 +111,7 @@
         $img_src = "server/uploads/gallery/" . $img; ?>
         <div>
           <a href="#" class="unit-1 text-center">
-            <img src="<?php echo $img_src; ?>" alt="Image" class="img-fluid">
+            <img src="<?php echo e($img_src); ?>" alt="Image" class="img-fluid">
             <div class="unit-1-text">
             </div>
           </a>
@@ -122,7 +122,7 @@
   </div>
 
 
-  <div class="site-blocks-cover overlay inner-page-cover" style="background-image: url(<?php echo $background_image_src; ?>); background-attachment: fixed;">
+  <div class="site-blocks-cover overlay inner-page-cover" style="background-image: url(<?php echo e($background_image_src); ?>); background-attachment: fixed;">
     <div class="container">
       <div class="row align-items-center justify-content-center text-center">
 
@@ -190,13 +190,13 @@
 
           <div class="p-4 mb-3 bg-white">
             <p class="mb-0 font-weight-bold">Address</p>
-            <p class="mb-4"><?php echo $res['company_address']; ?></p>
+            <p class="mb-4"><?php echo e($res['company_address']); ?></p>
 
             <p class="mb-0 font-weight-bold">Phone</p>
-            <p class="mb-4"><a href="#"><?php echo $res['company_phone']; ?></a></p>
+            <p class="mb-4"><a href="#"><?php echo e($res['company_phone']); ?></a></p>
 
             <p class="mb-0 font-weight-bold">Email Address</p>
-            <p class="mb-0"><a href="#"><?php echo $res['company_email']; ?></a></p>
+            <p class="mb-0"><a href="#"><?php echo e($res['company_email']); ?></a></p>
 
           </div>
 
