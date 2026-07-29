@@ -1,6 +1,8 @@
+.env
 migrate_passwords.php
 semgrep-results.*
 *.sarif
 dependency-check-report.*
 *_BEFORE.sql
-.env
+cookies.txt
+cust.txt

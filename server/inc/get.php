@@ -247,6 +247,8 @@ function getLoginAdmin($data)
         $_SESSION['admin'] = $emp['email'];
         $_SESSION['role']  = 'admin';
 
+        logSecurityEvent('login.success', ['identity' => $email, 'role' => 'admin']);
+
     } else {
 
         // --- Customer lookup ---
@@ -264,7 +266,15 @@ function getLoginAdmin($data)
             $value = 'customer';
             $_SESSION['customer'] = $cus['customer_id'];
             $_SESSION['role']     = 'customer';
+
+            logSecurityEvent('login.success',
+                ['identity' => $email, 'role' => 'customer']);
         }
+    }
+
+    if ($value === '') {
+        // The identity attempted is recorded; the password never is.
+        logSecurityEvent('login.failure', ['identity' => $email]);
     }
 
     echo $value;

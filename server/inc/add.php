@@ -121,6 +121,10 @@ function addEmployee($data)
 
 		$password = password_hash($password, PASSWORD_DEFAULT);
 
+		require_once __DIR__ . '/logger.php';
+		logSecurityEvent('account.created',
+			['type' => 'employee', 'identity' => $email]);
+
 		$sql = "INSERT INTO employee(name, email, phone, nic, address, gender,
 		                             password, is_deleted, branch_id)
 		        VALUES(?, ?, ?, ?, ?, ?, ?, 0, ?)";

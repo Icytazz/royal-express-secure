@@ -17,6 +17,7 @@
 // require this file as its very first statement - before any output - which is
 // what makes the redirect below actually work.
 require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/logger.php';
 
 /** function_code => 'public' | 'user' | 'admin' */
 function permissionTable(): array
@@ -56,12 +57,22 @@ function currentRole(): ?string
 
 function denyUnauthenticated(): void
 {
+    logSecurityEvent('authz.denied', [
+        'reason' => 'unauthenticated',
+        'target' => $_SERVER['REQUEST_URI'] ?? '-',
+    ]);
+
     http_response_code(401);
     exit('Authentication required');
 }
 
 function denyForbidden(): void
 {
+    logSecurityEvent('authz.denied', [
+        'reason' => 'insufficient_privilege',
+        'target' => $_SERVER['REQUEST_URI'] ?? '-',
+    ]);
+
     http_response_code(403);
     exit('Forbidden');
 }

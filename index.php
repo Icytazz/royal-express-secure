@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/server/bootstrap.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <?php include 'pages/head.php'; ?>

@@ -32,6 +32,10 @@ function permanantDeleteDataTable($data)
 
     assertIdentifiers('hard_delete', $table, $keyCol);
 
+    require_once __DIR__ . '/logger.php';
+    logSecurityEvent('record.hard_delete',
+        ['table' => $table, 'key' => $keyCol, 'id' => $id]);
+
     $sql  = "DELETE FROM `$table` WHERE `$keyCol` = ?";
     $stmt = mysqli_prepare($con, $sql);
     mysqli_stmt_bind_param($stmt, "s", $id);
