@@ -40,6 +40,12 @@ jobs:
 
       # Registry rulesets for generic coverage, plus the custom rules written
       # for the three vulnerabilities identified in Part 1.
+      #
+      # --json-output / --sarif-output emit both formats from a single scan.
+      # Passing `-o` twice does not work: the second occurrence overrides the
+      # first, so only one file is written and the SARIF upload then fails on a
+      # missing path.
+      #
       # `|| true` so the scan always produces a report; the gate decides pass/fail.
       - name: Run Semgrep
         run: |
@@ -48,9 +54,12 @@ jobs:
             --config p/security-audit \
             --config p/owasp-top-ten \
             --config ./.semgrep/ \
-            --json  -o semgrep-results.json \
-            --sarif -o semgrep.sarif \
+            --json-output=semgrep-results.json \
+            --sarif-output=semgrep.sarif \
             --metrics=off || true
+
+      - name: Confirm both reports were written
+        run: ls -la semgrep-results.json semgrep.sarif
 
       - name: Publish SARIF to the Security tab
         if: always()
