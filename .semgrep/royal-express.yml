@@ -1,0 +1,122 @@
+# Custom Semgrep rules for the three vulnerabilities identified in Part 1.
+#
+# Registry rulesets (p/php, p/security-audit, p/owasp-top-ten) provide generic
+# coverage. These rules target the specific defects found in this application,
+# and each carries metadata tracing it back to the OWASP category, NIST control
+# and MITRE technique cited in the Part 1 analysis.
+#
+# Each rule fires on the `baseline` branch and is silent on `secure-fixes`.
+
+rules:
+
+  # ---------------------------------------------------------------- V1
+  - id: royalexpress-sqli-string-interpolation
+    languages: [php]
+    severity: ERROR
+    message: >-
+      SQL statement built by string interpolation reaches the database driver.
+      A user-controlled value can alter query structure rather than being
+      treated as data (OWASP A05:2025 Injection). Use mysqli_prepare() with
+      bound parameters; for table or column names, which cannot be bound,
+      validate against the allow-list in schema_allowlist.php.
+    metadata:
+      owasp: "A05:2025 Injection"
+      nist: "SP 800-53 SI-10"
+      mitre: "T1190"
+      vulnerability: "V1"
+      confidence: HIGH
+    patterns:
+      - pattern-either:
+          # The dominant pattern in this codebase: the statement is assembled
+          # into a variable first, then passed to the driver. Matching only
+          # mysqli_query($con, "...$var...") misses every one of these.
+          - pattern: |
+              $SQL = "...$VAR...";
+              ...
+              mysqli_query($CON, $SQL);
+          - pattern: mysqli_query($CON, "...$VAR...")
+          - pattern: $CON->query("...$VAR...")
+
+      # Identifiers cannot be parameterised, so interpolation is permitted once
+      # the value has been checked against the allow-list. Excluding functions
+      # that perform that check keeps the quality gate meaningful: a gate that
+      # is permanently red for known-safe code trains its readers to ignore it.
+      - pattern-not-inside: |
+          function $F(...) {
+            ...
+            assertIdentifiers(...);
+            ...
+          }
+      - pattern-not-inside: |
+          function $F(...) {
+            ...
+            rejectRequest();
+            ...
+          }
+
+  # ---------------------------------------------------------------- V2
+  - id: royalexpress-redirect-without-exit
+    languages: [php]
+    severity: ERROR
+    message: >-
+      Redirect is not followed by exit(). PHP continues executing after
+      header(), so the guarded content is still rendered and the access control
+      check fails open (OWASP A01:2025 Broken Access Control).
+    metadata:
+      owasp: "A01:2025 Broken Access Control"
+      nist: "SP 800-53 AC-3"
+      mitre: "T1078"
+      vulnerability: "V2"
+      confidence: HIGH
+    patterns:
+      - pattern: header($LOC);
+      - metavariable-regex:
+          metavariable: $LOC
+          regex: (?i).*location.*
+      # pattern-not-inside, not pattern-not: pattern-not only filters a match
+      # occupying the SAME range, and the main pattern matches one statement
+      # while the exclusion spans two. Using pattern-not here silently fails to
+      # exclude anything, so every correctly guarded redirect is reported.
+      #
+      # exit and die are aliases and may appear with or without parentheses.
+      - pattern-not-inside: |
+          header($LOC);
+          ...
+          exit(...);
+      - pattern-not-inside: |
+          header($LOC);
+          ...
+          exit;
+      - pattern-not-inside: |
+          header($LOC);
+          ...
+          die(...);
+      - pattern-not-inside: |
+          header($LOC);
+          ...
+          die;
+
+  # ---------------------------------------------------------------- V3
+  - id: royalexpress-plaintext-password-to-db
+    languages: [php]
+    severity: ERROR
+    mode: taint
+    message: >-
+      A password from the request reaches the database without password_hash().
+      Credentials would be stored in recoverable form, so a single read of the
+      table yields usable plaintext (OWASP A02:2025 Cryptographic Failures).
+    metadata:
+      owasp: "A02:2025 Cryptographic Failures"
+      nist: "SP 800-63B"
+      mitre: "T1552"
+      vulnerability: "V3"
+      confidence: MEDIUM
+    pattern-sources:
+      - pattern: $DATA['password']
+      - pattern: $_POST[...]
+      - pattern: $_GET[...]
+    pattern-sanitizers:
+      - pattern: password_hash(...)
+    pattern-sinks:
+      - pattern: mysqli_query(...)
+      - pattern: mysqli_stmt_bind_param(...)
