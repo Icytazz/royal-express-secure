@@ -187,7 +187,7 @@
                                             </div>
                                             <div class="col-md-8">
                                                 <h6 class="text-muted font-semibold">Pending Orders</h6>
-                                                <h6 class="font-extrabold mb-0"><?php echo dataCountWhere('request', ' tracking_status = 1 '); ?></h6>
+                                                <h6 class="font-extrabold mb-0"><?php echo dataCountWhere('request', 'tracking_status', 1); ?></h6>
                                             </div>
                                         </div>
                                     </div>
@@ -204,7 +204,7 @@
                                             </div>
                                             <div class="col-md-8">
                                                 <h6 class="text-muted font-semibold">Accepted</h6>
-                                                <h6 class="font-extrabold mb-0"><?php echo dataCountWhere('request', ' tracking_status = 2 '); ?></h6>
+                                                <h6 class="font-extrabold mb-0"><?php echo dataCountWhere('request', 'tracking_status', 2); ?></h6>
                                             </div>
                                         </div>
                                     </div>
@@ -221,7 +221,7 @@
                                             </div>
                                             <div class="col-md-8">
                                                 <h6 class="text-muted font-semibold">Cancel Orders</h6>
-                                                <h6 class="font-extrabold mb-0"><?php echo dataCountWhere('request', ' tracking_status = 5 '); ?></h6>
+                                                <h6 class="font-extrabold mb-0"><?php echo dataCountWhere('request', 'tracking_status', 5); ?></h6>
                                             </div>
                                         </div>
                                     </div>
@@ -238,7 +238,7 @@
                                             </div>
                                             <div class="col-md-8">
                                                 <h6 class="text-muted font-semibold">Completed Orders</h6>
-                                                <h6 class="font-extrabold mb-0"><?php echo dataCountWhere('request', ' tracking_status = 3 '); ?></h6>
+                                                <h6 class="font-extrabold mb-0"><?php echo dataCountWhere('request', 'tracking_status', 3); ?></h6>
                                             </div>
                                         </div>
                                     </div>

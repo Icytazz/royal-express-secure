@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/schema_allowlist.php';
 
 function getAllBranch()
 {
@@ -8,6 +10,7 @@ function getAllBranch()
     $viewcat = "SELECT * FROM branch WHERE is_deleted = 0";
     return mysqli_query($con, $viewcat);
 }
+
 function getAllArea()
 {
     include 'connection.php';
@@ -15,13 +18,16 @@ function getAllArea()
     $viewcat = "SELECT * FROM area WHERE is_deleted = 0";
     return mysqli_query($con, $viewcat);
 }
+
 function getAllAreabyID($area_id)
 {
     include 'connection.php';
 
-    $viewcat = "SELECT * FROM area WHERE is_deleted = 0 AND area_id = '$area_id'";
-    return mysqli_query($con, $viewcat);
+    return dbQuery($con,
+        "SELECT * FROM area WHERE is_deleted = 0 AND area_id = ?",
+        "s", [$area_id]);
 }
+
 function getAllPrice()
 {
     include 'connection.php';
@@ -34,19 +40,24 @@ function checkPrice($start_area, $end_area)
 {
     include 'connection.php';
 
-    $viewcat = "SELECT * FROM price_table WHERE is_deleted = 0 AND start_area = '$start_area' AND end_area = '$end_area'";
-    return mysqli_num_rows(mysqli_query($con, $viewcat));
+    return dbCount($con,
+        "SELECT * FROM price_table
+          WHERE is_deleted = 0 AND start_area = ? AND end_area = ?",
+        "ss", [$start_area, $end_area]);
 }
 
 function getBille($customer_id)
 {
     include 'connection.php';
 
-    $q1 = "SELECT * FROM request join customer on customer.customer_id = request.customer_id WHERE request.customer_id = '$customer_id' ";
-    return mysqli_query($con, $q1);
+    return dbQuery($con,
+        "SELECT * FROM request
+           JOIN customer ON customer.customer_id = request.customer_id
+          WHERE request.customer_id = ?",
+        "s", [$customer_id]);
 }
 
-//product
+//employee
 
 function getAllemployee()
 {
@@ -60,39 +71,48 @@ function getemployeeByID($emp_id)
 {
     include 'connection.php';
 
-    $q1 = "SELECT * FROM employee WHERE is_deleted = 0 AND emp_id = '$emp_id'";
-    return mysqli_query($con, $q1);
+    return dbQuery($con,
+        "SELECT * FROM employee WHERE is_deleted = 0 AND emp_id = ?",
+        "s", [$emp_id]);
 }
 
 function getemployeeByEmail($email)
 {
     include 'connection.php';
 
-    $q1 = "SELECT * FROM employee WHERE is_deleted = 0 AND email = '$email'";
-    return mysqli_query($con, $q1);
+    return dbQuery($con,
+        "SELECT * FROM employee WHERE is_deleted = 0 AND email = ?",
+        "s", [$email]);
 }
 
 function getBranchByID($branch_id)
 {
     include 'connection.php';
 
-    $q1 = "SELECT * FROM branch WHERE is_deleted = 0 AND branch_id = '$branch_id'";
-    return mysqli_query($con, $q1);
+    return dbQuery($con,
+        "SELECT * FROM branch WHERE is_deleted = 0 AND branch_id = ?",
+        "s", [$branch_id]);
 }
 
 function getAllTrackingByCUS($customer_id)
 {
     include 'connection.php';
 
-    $viewcat = "SELECT * FROM request WHERE is_deleted = 0 AND customer_id = '$customer_id' ORDER BY date_updated DESC";
-    return mysqli_query($con, $viewcat);
+    return dbQuery($con,
+        "SELECT * FROM request
+          WHERE is_deleted = 0 AND customer_id = ?
+          ORDER BY date_updated DESC",
+        "s", [$customer_id]);
 }
 
 function getAllTracking()
 {
     include 'connection.php';
 
-    $viewcat = "SELECT * FROM request join customer on customer.customer_id = request.customer_id WHERE request.is_deleted = 0 ORDER BY date_updated DESC";
+    $viewcat = "SELECT * FROM request
+                  JOIN customer ON customer.customer_id = request.customer_id
+                 WHERE request.is_deleted = 0
+                 ORDER BY date_updated DESC";
     return mysqli_query($con, $viewcat);
 }
 
@@ -100,19 +120,19 @@ function checkemployeetByEmail($email)
 {
     include 'connection.php';
 
-    $employee = "SELECT * FROM employee WHERE email = '$email' AND is_deleted = 0";
-    $result = mysqli_query($con, $employee);
+    $employees = dbCount($con,
+        "SELECT * FROM employee WHERE email = ? AND is_deleted = 0",
+        "s", [$email]);
 
-    $customer = "SELECT * FROM customer WHERE email = '$email' AND is_deleted = 0";
-    $cus_res = mysqli_query($con, $customer);
-
-    if (mysqli_num_rows($result) > 0) {
-        return mysqli_num_rows($result);
-    } else if (mysqli_num_rows($cus_res) > 0) {
-        return mysqli_num_rows($cus_res);
-    } else {
-        return 0;
+    if ($employees > 0) {
+        return $employees;
     }
+
+    $customers = dbCount($con,
+        "SELECT * FROM customer WHERE email = ? AND is_deleted = 0",
+        "s", [$email]);
+
+    return $customers > 0 ? $customers : 0;
 }
 
 function getAllgalleryImages()
@@ -125,60 +145,65 @@ function getAllgalleryImages()
 
 //customer
 
-
 function checkuserPassword($data)
 {
     include 'connection.php';
-    $customer_id = $data['customer_id'];
-    $password = $data['password'];
 
-    $viewcat = "SELECT * FROM customer WHERE is_deleted = 0 AND password = '$password' AND customer_id = '$customer_id' ";
-    $result = mysqli_query($con, $viewcat);
-    $count = mysqli_num_rows($result);
-    echo $count;
+    $customer_id = $data['customer_id'] ?? '';
+    $password    = $data['password']    ?? '';
+
+    // TODO Phase 2: fetch by customer_id only, then password_verify()
+    echo dbCount($con,
+        "SELECT * FROM customer
+          WHERE is_deleted = 0 AND password = ? AND customer_id = ?",
+        "ss", [$password, $customer_id]);
 }
 
 function checkArea($data)
 {
     include 'connection.php';
 
-    $start_area = $data['send_location'];
-    $end_area = $data['end_location'];
+    $start_area = $data['send_location'] ?? '';
+    $end_area   = $data['end_location']  ?? '';
 
-    $viewcat = "SELECT * FROM price_table WHERE is_deleted = 0 AND start_area = '$start_area' AND end_area = '$end_area' ";
-    $result = mysqli_query($con, $viewcat);
-    $row = mysqli_fetch_assoc($result);
-    echo $row['price'];
+    $res = dbQuery($con,
+        "SELECT * FROM price_table
+          WHERE is_deleted = 0 AND start_area = ? AND end_area = ?",
+        "ss", [$start_area, $end_area]);
+
+    $row = $res ? mysqli_fetch_assoc($res) : null;
+    echo $row['price'] ?? '';
 }
 
 function checkAreaByName($area_name)
 {
     include 'connection.php';
 
-    $q1 = "SELECT * FROM area WHERE area_name = '$area_name' AND is_deleted = 0";
-    $res =  mysqli_query($con, $q1);
-    return mysqli_num_rows($res);
+    return dbCount($con,
+        "SELECT * FROM area WHERE area_name = ? AND is_deleted = 0",
+        "s", [$area_name]);
 }
 
 function checkUserEmail($data)
 {
     include 'connection.php';
 
-    $customer_id = $data['customer_id'];
-    $email = $data['email'];
+    $customer_id = $data['customer_id'] ?? '';
+    $email       = $data['email']       ?? '';
 
-    $viewcat = "SELECT * FROM customer WHERE is_deleted = 0 AND email = '$email' AND customer_id = '$customer_id' ";
-    $result = mysqli_query($con, $viewcat);
-    $count = mysqli_num_rows($result);
-    echo $count;
+    echo dbCount($con,
+        "SELECT * FROM customer
+          WHERE is_deleted = 0 AND email = ? AND customer_id = ?",
+        "ss", [$email, $customer_id]);
 }
 
 function getAllcustomerById($customer_id)
 {
     include 'connection.php';
 
-    $q1 = "SELECT * FROM customer WHERE is_deleted = '0' AND customer_id = '$customer_id'";
-    return mysqli_query($con, $q1);
+    return dbQuery($con,
+        "SELECT * FROM customer WHERE is_deleted = 0 AND customer_id = ?",
+        "s", [$customer_id]);
 }
 
 function getAllcustomers()
@@ -238,38 +263,38 @@ function checkemployee($email)
 {
     include 'connection.php';
 
-    $q1 = "SELECT * FROM employee WHERE email='$email' AND is_deleted='0'";
-    return mysqli_query($con, $q1);
+    return dbQuery($con,
+        "SELECT * FROM employee WHERE email = ? AND is_deleted = 0",
+        "s", [$email]);
 }
 
 function checkCustomerByEmail($email)
 {
     include 'connection.php';
 
-    $q1 = "SELECT * FROM customer WHERE email='$email' AND is_deleted='0'";
-    return mysqli_query($con, $q1);
+    return dbQuery($con,
+        "SELECT * FROM customer WHERE email = ? AND is_deleted = 0",
+        "s", [$email]);
 }
-
 
 function checkCustomerByID($customer_id)
 {
     include 'connection.php';
 
-    $q1 = "SELECT * FROM customer WHERE customer_id='$customer_id' AND is_deleted = '0'";
-    return mysqli_query($con, $q1);
+    return dbQuery($con,
+        "SELECT * FROM customer WHERE customer_id = ? AND is_deleted = 0",
+        "s", [$customer_id]);
 }
 
 function getAllCustomer()
 {
     include 'connection.php';
 
-    $q1 = "SELECT * FROM customer WHERE is_deleted = '0' AND email != 'admin'";
+    $q1 = "SELECT * FROM customer WHERE is_deleted = 0 AND email != 'admin'";
     $table = mysqli_query($con, $q1);
-    $columns = mysqli_fetch_all($table, MYSQLI_ASSOC);
 
-    return $columns;
+    return mysqli_fetch_all($table, MYSQLI_ASSOC);
 }
-
 
 //contact
 
@@ -283,42 +308,39 @@ function getAllMessages()
 
 //count
 
+// $table is an identifier and cannot be bound, so it is validated against the
+// allow-list before interpolation.
 function dataCount($table)
 {
     include 'connection.php';
 
-    $counts = "SELECT * FROM $table WHERE is_deleted = 0";
-    $res =  mysqli_query($con, $counts);
-    $count =  mysqli_num_rows($res);
-    echo $count;
+    if (!array_key_exists($table, schemaAllowList())) {
+        rejectRequest();
+    }
+
+    $res = mysqli_query($con, "SELECT COUNT(*) AS c FROM `$table` WHERE is_deleted = 0");
+    $row = mysqli_fetch_assoc($res);
+    echo $row['c'];
 }
 
-function dataCountWhere($table, $where)
+// Was dataCountWhere($table, $where) taking a raw SQL fragment.  Split into a
+// validated column and a bound value so no caller can supply SQL text.
+function dataCountWhere($table, $column, $value)
 {
     include 'connection.php';
 
-    $counts = "SELECT * FROM $table WHERE $where AND is_deleted = 0";
-    $res =  mysqli_query($con, $counts);
-    $count =  mysqli_num_rows($res);
-    echo $count;
+    $schema = schemaAllowList();
+
+    if (!array_key_exists($table, $schema))                  rejectRequest();
+    if (!in_array($column, $schema[$table]['fields'], true)) rejectRequest();
+
+    $res = dbQuery($con,
+        "SELECT COUNT(*) AS c FROM `$table` WHERE `$column` = ? AND is_deleted = 0",
+        "s", [$value]);
+
+    $row = mysqli_fetch_assoc($res);
+    echo $row['c'];
 }
-
-function dataforCount($table)
-{
-    include 'connection.php';
-
-    $counts = "SELECT sum(total) as sum FROM $table WHERE is_deleted = 0";
-    return mysqli_query($con, $counts);
-}
-
-function dataforCountToday($table)
-{
-    include 'connection.php';
-
-    $counts = "SELECT sum(total) as sum FROM $table WHERE month(now()) = month(date_updated) AND is_deleted = 0s";
-    return mysqli_query($con, $counts);
-}
-
 
 //settings
 
@@ -333,60 +355,12 @@ function getAllSettings()
 function checkPasswordByName($data)
 {
     include 'connection.php';
-    $email = $data['email'];
-    $password = $data['password'];
 
-    $viewcat = "SELECT * FROM employee WHERE password = '$password' AND email = '$email' ";
-    $result = mysqli_query($con, $viewcat);
-    $count = mysqli_num_rows($result);
-    echo $count;
-}
+    $email    = $data['email']    ?? '';
+    $password = $data['password'] ?? '';
 
-function getAllCart($customer_id)
-{
-    include 'connection.php';
-
-    $q1 = "SELECT * FROM cart join products on products.pid = cart.pid join customer on customer.customer_id = cart.customer_id WHERE cart.customer_id = '$customer_id'";
-    return mysqli_query($con, $q1);
-}
-
-
-function getAllOrdersByCustomer($customer_id)
-{
-    include 'connection.php';
-
-    $viewcat = "SELECT * FROM product_orders WHERE customer_id = '$customer_id' AND is_deleted = '0' ORDER BY date_updated DESC";
-    return mysqli_query($con, $viewcat);
-}
-
-function getAllOrderItemsBYOrder($order_id)
-{
-    include 'connection.php';
-
-    $viewcat = "SELECT * FROM order_items join products on order_items.pid = products.pid WHERE order_items.order_id = '$order_id'";
-    return mysqli_query($con, $viewcat);
-}
-
-function getAllOrders()
-{
-    include 'connection.php';
-
-    $viewcat = "SELECT * FROM product_orders join customer on customer.customer_id = product_orders.customer_id  WHERE product_orders.is_deleted = '0' ORDER BY date_updated DESC";
-    return mysqli_query($con, $viewcat);
-}
-
-function getAllOrdersPending()
-{
-    include 'connection.php';
-
-    $viewcat = "SELECT * FROM product_orders join customer on customer.customer_id = product_orders.customer_id  WHERE product_orders.is_deleted = '0' AND product_orders.order_status = '1' ORDER BY date_updated DESC";
-    return mysqli_query($con, $viewcat);
-}
-
-function getAllOrderItems($order_id)
-{
-    include 'connection.php';
-
-    $viewcat = "SELECT * FROM order_items join products on order_items.pid = products.pid WHERE order_items.order_id = '$order_id'";
-    return mysqli_query($con, $viewcat);
+    // TODO Phase 2: fetch by email only, then password_verify()
+    echo dbCount($con,
+        "SELECT * FROM employee WHERE password = ? AND email = ?",
+        "ss", [$password, $email]);
 }
