@@ -152,11 +152,16 @@ function checkuserPassword($data)
     $customer_id = $data['customer_id'] ?? '';
     $password    = $data['password']    ?? '';
 
-    // TODO Phase 2: fetch by customer_id only, then password_verify()
-    echo dbCount($con,
-        "SELECT * FROM customer
-          WHERE is_deleted = 0 AND password = ? AND customer_id = ?",
-        "ss", [$password, $customer_id]);
+    // The password cannot be part of the WHERE clause once it is hashed: the
+    // row is fetched by identity, then the submitted value is verified.
+    $res = dbQuery($con,
+        "SELECT password FROM customer WHERE is_deleted = 0 AND customer_id = ?",
+        "s", [$customer_id]);
+
+    $row = $res ? mysqli_fetch_assoc($res) : null;
+
+    // Callers treat a positive number as success, so the 1/0 contract is kept.
+    echo ($row !== null && password_verify($password, $row['password'])) ? 1 : 0;
 }
 
 function checkArea($data)
@@ -231,8 +236,8 @@ function getLoginAdmin($data)
     $emp = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
     mysqli_stmt_close($stmt);
 
-    // TODO Phase 2: replace with password_verify($password, $emp['password'])
-    if ($emp !== null && $emp['password'] === $password) {
+    // Constant-time comparison against the stored bcrypt hash.
+    if ($emp !== null && password_verify($password, $emp['password'])) {
 
         $value = 'admin';
         $_SESSION['admin'] = $emp['email'];
@@ -248,8 +253,7 @@ function getLoginAdmin($data)
         $cus = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
         mysqli_stmt_close($stmt);
 
-        // TODO Phase 2: replace with password_verify($password, $cus['password'])
-        if ($cus !== null && $cus['password'] === $password) {
+        if ($cus !== null && password_verify($password, $cus['password'])) {
             $value = 'customer';
             $_SESSION['customer'] = $cus['customer_id'];
             // TODO Phase 3: $_SESSION['role'] = 'customer';
@@ -359,8 +363,11 @@ function checkPasswordByName($data)
     $email    = $data['email']    ?? '';
     $password = $data['password'] ?? '';
 
-    // TODO Phase 2: fetch by email only, then password_verify()
-    echo dbCount($con,
-        "SELECT * FROM employee WHERE password = ? AND email = ?",
-        "ss", [$password, $email]);
+    $res = dbQuery($con,
+        "SELECT password FROM employee WHERE email = ? AND is_deleted = 0",
+        "s", [$email]);
+
+    $row = $res ? mysqli_fetch_assoc($res) : null;
+
+    echo ($row !== null && password_verify($password, $row['password'])) ? 1 : 0;
 }

@@ -12,6 +12,13 @@ function updateDataTable($data)
 
     assertIdentifiers('update', $table, $keyCol, $field);
 
+    // Single chokepoint for credential writes. Both change-password flows post
+    // here with field=password, and so would any future caller, so hashing is
+    // applied at the write itself rather than at each call site.
+    if ($field === 'password') {
+        $value = password_hash($value, PASSWORD_DEFAULT);
+    }
+
     $sql  = "UPDATE `$table` SET `$field` = ? WHERE `$keyCol` = ?";
     $stmt = mysqli_prepare($con, $sql);
     mysqli_stmt_bind_param($stmt, "ss", $value, $id);

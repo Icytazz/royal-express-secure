@@ -1,13 +1,16 @@
 <?php
-if (session_id() == '') {
-    session_start();
-}
+/**
+ * API request controller. Entry point for all AJAX calls.
+ *
+ * Not to be included by pages - see bootstrap.php.
+ */
 
-include 'inc/get.php';
-include 'inc/connection.php';
-include 'inc/update.php';
-include 'inc/delete.php';
-include 'inc/add.php';
+require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/inc/validate.php';
+
+// Boundary validation runs before dispatch, so no handler can ever be reached
+// with input that failed type, format or length checks (NIST SP 800-53 SI-10).
+validateInput($_GET['function_code'] ?? '', $_POST);
 
 if (isset($_GET['function_code']) && $_GET['function_code'] == 'getCustomerTbleData') {
     echo json_encode(getAllCustomer());

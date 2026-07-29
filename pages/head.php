@@ -1,6 +1,6 @@
 <head>
 <?php 
-    include 'server/api.php';  
+    include 'server/bootstrap.php';  
     include 'pages/assets.php';  
 
     $setting = getAllSettings();

@@ -1,6 +1,6 @@
 <?php
 require('assets/plugin/pdf/fpdf.php');
-include('../server/api.php');
+include('../server/bootstrap.php');
 
 class PDF extends FPDF
 {

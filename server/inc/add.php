@@ -119,7 +119,8 @@ function addEmployee($data)
 
 	if ($count == 0) {
 
-		// TODO Phase 2: $password = password_hash($password, PASSWORD_DEFAULT);
+		$password = password_hash($password, PASSWORD_DEFAULT);
+
 		$sql = "INSERT INTO employee(name, email, phone, nic, address, gender,
 		                             password, is_deleted, branch_id)
 		        VALUES(?, ?, ?, ?, ?, ?, ?, 0, ?)";
@@ -167,7 +168,8 @@ function createCustomer($data)
 	$gender   = $data['gender']   ?? '';
 	$password = $data['password'] ?? '';
 
-	// TODO Phase 2: $password = password_hash($password, PASSWORD_DEFAULT);
+	$password = password_hash($password, PASSWORD_DEFAULT);
+
 	$sql = "INSERT INTO customer(name, email, phone, nic, address, gender,
 	                             password, is_deleted)
 	        VALUES(?, ?, ?, ?, ?, ?, ?, 0)";
