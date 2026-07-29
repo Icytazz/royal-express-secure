@@ -160,8 +160,12 @@ jobs:
 
       # ZAP runs inside Docker, so 127.0.0.1 is the container. PHP is bound to
       # 0.0.0.0 and the target is the Docker bridge address.
+      # v0.12.0 uploaded its reports through the retired v3 artifact API and
+      # failed with "artifact name zap_scan is not valid" after the scan had
+      # already completed successfully. v0.14.0 moved to the current API and
+      # v0.15.0 runs on Node 24.
       - name: ZAP baseline scan
-        uses: zaproxy/action-baseline@v0.12.0
+        uses: zaproxy/action-baseline@v0.15.0
         with:
           target: 'http://172.17.0.1:8080'
           cmd_options: '-a'
