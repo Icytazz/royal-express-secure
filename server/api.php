@@ -54,7 +54,9 @@ if (isset($_GET['function_code']) && $_GET['function_code'] == 'getCustomerTbleD
         editSettingImage($_POST, $img);
     }
 } else if (isset($_GET['function_code']) && $_GET['function_code'] == 'login') {
-    echo getLoginAdmin($_POST);
+    // getLoginAdmin() writes its own response and returns null, so echoing its
+    // result printed nothing while making $_POST appear to flow to output.
+    getLoginAdmin($_POST);
 } else if (isset($_GET['function_code']) && $_GET['function_code'] == 'checkPasswordByEmail') {
     checkPasswordByName($_POST);
 } else if (isset($_GET['function_code']) && $_GET['function_code'] == 'addcontact') {
