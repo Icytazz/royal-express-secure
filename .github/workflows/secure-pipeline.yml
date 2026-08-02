@@ -70,8 +70,10 @@ jobs:
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065   # v5
         with:
+          # No cache: there is no requirements.txt or pyproject.toml in this
+          # repository, and setup-python treats a cache request with nothing to
+          # hash as a hard error rather than a no-op.
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
 
       - name: Install Semgrep
         run: |
@@ -160,7 +162,12 @@ jobs:
       - name: Enforce the gate
         if: steps.gate.outputs.status != 'pass'
         run: |
-          echo "::error::Quality gate failed - ${{ steps.gate.outputs.errors }} error-severity findings"
+          case "${{ steps.gate.outputs.status }}" in
+            fail)        echo "::error::Quality gate failed - ${{ steps.gate.outputs.errors }} error-severity findings" ;;
+            rule-defect) echo "::error::Quality gate failed - a rule failed to parse, so the findings cannot be trusted" ;;
+            error)       echo "::error::Quality gate failed - no scan output reached the gate; check the SAST jobs" ;;
+            *)           echo "::error::Quality gate failed - status '${{ steps.gate.outputs.status }}'" ;;
+          esac
           exit 1
 
   # ------------------------------------------------------------------- SCA
@@ -188,11 +195,16 @@ jobs:
           path: '.'
           format: 'ALL'
 
+      # Dependency-Check runs inside Docker as root, so reports/ comes back
+      # owned by root and the runner user cannot write into it. Take ownership
+      # before recording the outcome.
       - name: Record the outcome for the consolidated report
         if: always()
         run: |
+          sudo chown -R "$(id -u):$(id -g)" reports 2>/dev/null || true
           mkdir -p reports
           echo '{"outcome":"${{ steps.depcheck.outcome }}"}' > reports/sca-status.json
+          ls -la reports/
 
       - name: Publish SARIF to the Security tab
         if: always() && steps.depcheck.outcome == 'success'
