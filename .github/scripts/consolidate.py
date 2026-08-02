@@ -23,7 +23,7 @@ from collections import Counter
 # the key rather than reimplementing it means they cannot drift apart: an
 # earlier version of this script omitted the column and reported 86 unique
 # findings where the gate reported 95, from identical input.
-from gate import key
+from gate import key, severity, FAILING, WARNING_LEVEL
 
 BRANCH = os.getenv("GITHUB_REF_NAME", "unknown")
 RUN = os.getenv("GITHUB_RUN_NUMBER", "?")
@@ -61,8 +61,8 @@ def semgrep_section(root):
             findings.setdefault(key(r), r)
 
     unique = list(findings.values())
-    errors = [r for r in unique if r["extra"]["severity"] == "ERROR"]
-    warns = [r for r in unique if r["extra"]["severity"] == "WARNING"]
+    errors = [r for r in unique if severity(r) in FAILING]
+    warns = [r for r in unique if severity(r) in WARNING_LEVEL]
     custom = [r for r in errors if "royalexpress" in r["check_id"].lower()]
     by_rule = Counter(r["check_id"].rsplit(".", 1)[-1] for r in errors)
 
