@@ -13,6 +13,13 @@ version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
+    # Wait before adopting a newly published version. A package compromised at
+    # publication is most dangerous in its first days, and an update policy
+    # that adopts releases the moment they appear removes the window in which
+    # such a compromise is usually noticed. Semgrep flagged the absence of this
+    # setting on the very file added to harden the supply chain.
+    cooldown:
+      default-days: 7
     schedule:
       interval: "weekly"
       day: "monday"

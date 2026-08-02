@@ -24,6 +24,18 @@ from collections import Counter
 
 RESULT_GLOB = "semgrep-*.json"
 
+# Semgrep emits two severity vocabularies. Registry rules use the classic
+# INFO / WARNING / ERROR; newer rules use LOW / MEDIUM / HIGH / CRITICAL. An
+# earlier version of this gate counted only ERROR and WARNING, which meant a
+# CRITICAL finding would have passed the gate in silence. The run that exposed
+# this reported one MEDIUM finding the gate did not see at all.
+FAILING = {"ERROR", "CRITICAL", "HIGH"}
+WARNING_LEVEL = {"WARNING", "MEDIUM"}
+
+
+def severity(r):
+    return (r.get("extra", {}).get("severity") or "").upper()
+
 
 def emit(name, value):
     """Publish a step output for later jobs to consume."""
@@ -96,8 +108,10 @@ def main() -> int:
             (parse_errors if is_rule_defect(e) else timeouts).append(e)
 
     unique = list(findings.values())
-    errors = [r for r in unique if r["extra"]["severity"] == "ERROR"]
-    warnings = [r for r in unique if r["extra"]["severity"] == "WARNING"]
+    errors = [r for r in unique if severity(r) in FAILING]
+    warnings = [r for r in unique if severity(r) in WARNING_LEVEL]
+    other = [r for r in unique
+             if severity(r) not in FAILING and severity(r) not in WARNING_LEVEL]
     custom = [r for r in errors if "royalexpress" in r["check_id"].lower()]
     by_rule = Counter(r["check_id"].rsplit(".", 1)[-1] for r in errors)
 
@@ -112,7 +126,9 @@ def main() -> int:
         f"- Unique findings: **{len(unique)}** "
         f"({duplicates} duplicate{'' if duplicates == 1 else 's'} removed "
         f"across rulesets)",
-        f"- ERROR: **{len(errors)}** · WARNING: **{len(warnings)}**",
+        f"- Build-failing (ERROR/HIGH/CRITICAL): **{len(errors)}** · "
+        f"warning (WARNING/MEDIUM): **{len(warnings)}** · "
+        f"informational: **{len(other)}**",
         f"- From the custom Royal Express rules: **{len(custom)}**",
         f"- Rule defects: **{len(parse_errors)}** · "
         f"timeouts on vendored files: {len(timeouts)}",
