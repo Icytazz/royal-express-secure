@@ -6,6 +6,11 @@
 # and MITRE technique cited in the Part 1 analysis.
 #
 # Each rule fires on the `baseline` branch and is silent on `secure-fixes`.
+#
+# OWASP references follow the final Top 10:2025 list. Part 1 mapped plaintext
+# password storage to A02:2025; A02:2025 is Security Misconfiguration and
+# Cryptographic Failures is A04:2025. The V3 rule below is corrected
+# accordingly, and the correction is stated in section 1 of the Part 2 report.
 
 rules:
 
@@ -107,9 +112,9 @@ rules:
     message: >-
       A password from the request reaches the database without password_hash().
       Credentials would be stored in recoverable form, so a single read of the
-      table yields usable plaintext (OWASP A02:2025 Cryptographic Failures).
+      table yields usable plaintext (OWASP A04:2025 Cryptographic Failures).
     metadata:
-      owasp: "A02:2025 Cryptographic Failures"
+      owasp: "A04:2025 Cryptographic Failures"
       nist: "SP 800-63B"
       mitre: "T1552"
       vulnerability: "V3"

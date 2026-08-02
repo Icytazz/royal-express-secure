@@ -4,8 +4,16 @@ name: Secure Pipeline
 #   commit / PR   Semgrep            SAST  - injection, weak crypto, missing guards
 #   commit / PR   Dependency-Check   SCA   - known CVEs in bundled JS libraries
 #   commit / PR   Gitleaks           secret scanning - connection credentials
-#   post-deploy   OWASP ZAP          DAST  - against a live instance built in CI
+#   post-gate     OWASP ZAP          DAST  - against a live instance built in CI
+#   every run     consolidate.py     reporting - one report from four tools
 #   scheduled     Dependency-Check   weekly re-run catches newly published CVEs
+#
+# Every action is pinned to a commit SHA rather than a tag. A tag is mutable:
+# the owner can move v4 to different code without this repository changing, so
+# a tag reference is an unverified dependency (OWASP A03:2025, Software Supply
+# Chain Failures). This was not a theoretical concern here - the pipeline's own
+# Semgrep stage flagged the mutable references in an earlier version of this
+# file. Run pin-actions.sh to refresh the pins.
 
 on:
   push:
@@ -16,111 +24,243 @@ on:
     - cron: '0 2 * * 1'          # Mondays 02:00 UTC
   workflow_dispatch:
 
+# Least privilege at the workflow level. Individual jobs widen this only where
+# they need to, which is the same principle applied to the cms_app database
+# account in section 5.3: the default is the minimum, not the maximum.
 permissions:
   contents: read
-  security-events: write         # required to upload SARIF
+
+# Superseded runs on the same branch are cancelled rather than left to compete
+# for runners. Scheduled runs are exempt so a weekly CVE sweep is never
+# cancelled by an unrelated push.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+
+env:
+  PYTHON_VERSION: '3.11'
 
 jobs:
 
   # ------------------------------------------------------------------ SAST
+  # One job per ruleset rather than one job with four --config flags. The
+  # rulesets then run in parallel, each produces its own report, and the run
+  # graph shows which ruleset found what. The custom rules written for this
+  # application get their own leg, which is what makes the 56-to-0 comparison
+  # in section 8.4 attributable.
   sast:
-    name: SAST - Semgrep
+    name: SAST - Semgrep (${{ matrix.ruleset.name }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write     # only this job uploads SARIF
+    strategy:
+      # One ruleset erroring must not cancel the others, or a single transient
+      # registry failure would hide every finding from the rest.
+      fail-fast: false
+      matrix:
+        ruleset:
+          - { name: 'PHP',            config: 'p/php',            slug: 'php' }
+          - { name: 'security-audit', config: 'p/security-audit', slug: 'audit' }
+          - { name: 'OWASP Top 10',   config: 'p/owasp-top-ten',  slug: 'owasp' }
+          - { name: 'custom rules',   config: './.semgrep/',      slug: 'custom' }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5   # v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065   # v5
         with:
-          python-version: '3.11'
+          # No cache: there is no requirements.txt or pyproject.toml in this
+          # repository, and setup-python treats a cache request with nothing to
+          # hash as a hard error rather than a no-op.
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Semgrep
         run: |
           python -m pip install --upgrade pip
           pip install semgrep
 
-      # Registry rulesets for generic coverage, plus the custom rules written
-      # for the three vulnerabilities identified in Part 1.
-      #
       # --json-output / --sarif-output emit both formats from a single scan.
-      # Passing `-o` twice does not work: the second occurrence overrides the
+      # Passing -o twice does not work: the second occurrence overrides the
       # first, so only one file is written and the SARIF upload then fails on a
       # missing path.
       #
-      # `|| true` so the scan always produces a report; the gate decides pass/fail.
+      # `|| true` so the scan always produces a report; the gate decides pass
+      # or fail. A scanner that aborts the build on its own leaves no evidence.
       - name: Run Semgrep
         run: |
           semgrep scan \
-            --config p/php \
-            --config p/security-audit \
-            --config p/owasp-top-ten \
-            --config ./.semgrep/ \
-            --json-output=semgrep-results.json \
-            --sarif-output=semgrep.sarif \
+            --config ${{ matrix.ruleset.config }} \
+            --json-output=semgrep-${{ matrix.ruleset.slug }}.json \
+            --sarif-output=semgrep-${{ matrix.ruleset.slug }}.sarif \
             --metrics=off || true
 
       - name: Confirm both reports were written
-        run: ls -la semgrep-results.json semgrep.sarif
+        run: ls -la semgrep-${{ matrix.ruleset.slug }}.json semgrep-${{ matrix.ruleset.slug }}.sarif
 
-      # Requires code scanning to be available: free on public repositories,
-      # and on private ones only with GitHub Advanced Security.
+      # Each matrix leg needs its own category. Uploading four SARIF files
+      # under one category makes each overwrite the last, and the Security tab
+      # would show only whichever finished most recently - silently, with no
+      # error anywhere in the log.
       - name: Publish SARIF to the Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@dd903d2e4f5405488e5ef1422510ee31c8b32357   # v3
         with:
-          sarif_file: semgrep.sarif
-          category: semgrep
+          sarif_file: semgrep-${{ matrix.ruleset.slug }}.sarif
+          category: semgrep-${{ matrix.ruleset.slug }}
 
       - name: Upload SAST report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02   # v4
         with:
-          name: sast-semgrep-report
+          name: sast-semgrep-${{ matrix.ruleset.slug }}
           path: |
-            semgrep-results.json
-            semgrep.sarif
+            semgrep-${{ matrix.ruleset.slug }}.json
+            semgrep-${{ matrix.ruleset.slug }}.sarif
+          retention-days: 30
 
-      - name: Quality gate
-        run: python .github/scripts/gate.py
+  # ------------------------------------------------------------------ GATE
+  # Split out of the scan so it can see every matrix leg at once. Findings are
+  # deduplicated first: a defect reported by two rulesets is one defect, and
+  # without deduplication splitting one scan into four would inflate the count.
+  gate:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    needs: sast
+    if: always()                 # a failed scan leg must still reach the gate
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      status:   ${{ steps.gate.outputs.status }}
+      errors:   ${{ steps.gate.outputs.errors }}
+      warnings: ${{ steps.gate.outputs.warnings }}
+      total:    ${{ steps.gate.outputs.total }}
+      custom:   ${{ steps.gate.outputs.custom }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5   # v4
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065   # v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Collect every ruleset's findings
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093   # v4
+        with:
+          pattern: sast-semgrep-*
+          merge-multiple: true
+          path: sast
+
+      # This step always exits zero. It records the counts as step outputs so
+      # they survive into the report job; the following step decides pass or
+      # fail. Failing here instead would risk the outputs never being
+      # published, and the consolidated report would have nothing to describe.
+      - name: Evaluate
+        id: gate
+        run: python .github/scripts/gate.py sast
+
+      - name: Enforce the gate
+        if: steps.gate.outputs.status != 'pass'
+        run: |
+          case "${{ steps.gate.outputs.status }}" in
+            fail)        echo "::error::Quality gate failed - ${{ steps.gate.outputs.errors }} error-severity findings" ;;
+            rule-defect) echo "::error::Quality gate failed - a rule failed to parse, so the findings cannot be trusted" ;;
+            error)       echo "::error::Quality gate failed - no scan output reached the gate; check the SAST jobs" ;;
+            *)           echo "::error::Quality gate failed - status '${{ steps.gate.outputs.status }}'" ;;
+          esac
+          exit 1
 
   # ------------------------------------------------------------------- SCA
   sca:
     name: SCA - OWASP Dependency-Check
     runs-on: ubuntu-latest
-    continue-on-error: true      # NVD feed download is slow and occasionally rate-limited
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5   # v4
 
+      # The NVD feed download is slow and occasionally rate-limited, which is a
+      # property of the feed rather than of this repository. The step is
+      # allowed to fail, but its outcome is captured and reported rather than
+      # silently swallowed: a supply-chain check that quietly did not run is
+      # worse than one that visibly did not run.
       - name: Dependency-Check
-        uses: dependency-check/Dependency-Check_Action@main
+        id: depcheck
+        continue-on-error: true
+        uses: dependency-check/Dependency-Check_Action@1e54355a8b4c8abaa8cc7d0b70aa655a3bb15a6c   # main
         with:
           project: royal-express-cms
           path: '.'
-          format: 'HTML'
+          format: 'ALL'
 
-      - uses: actions/upload-artifact@v4
+      # Dependency-Check runs inside Docker as root, so reports/ comes back
+      # owned by root and the runner user cannot write into it. Take ownership
+      # before recording the outcome.
+      - name: Record the outcome for the consolidated report
         if: always()
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" reports 2>/dev/null || true
+          mkdir -p reports
+          echo '{"outcome":"${{ steps.depcheck.outcome }}"}' > reports/sca-status.json
+          ls -la reports/
+
+      - name: Publish SARIF to the Security tab
+        if: always() && steps.depcheck.outcome == 'success'
+        uses: github/codeql-action/upload-sarif@dd903d2e4f5405488e5ef1422510ee31c8b32357   # v3
+        continue-on-error: true
+        with:
+          sarif_file: reports/dependency-check-report.sarif
+          category: dependency-check
+
+      - name: Upload SCA report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02   # v4
         with:
           name: sca-dependency-check-report
           path: reports/
+          retention-days: 30
 
-  # --------------------------------------------------------------- secrets
+  # --------------------------------------------------------------- SECRETS
   secrets:
     name: Secret scanning - Gitleaks
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5   # v4
         with:
           fetch-depth: 0         # full history: a credential removed later is still in it
 
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7   # v2
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: true
+
+      - name: Publish SARIF to the Security tab
+        if: always() && hashFiles('results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@dd903d2e4f5405488e5ef1422510ee31c8b32357   # v3
+        continue-on-error: true
+        with:
+          sarif_file: results.sarif
+          category: gitleaks
 
   # ------------------------------------------------------------------ DAST
+  # Gated deliberately. A build that fails static analysis never reaches the
+  # stage that deploys and scans a running instance, which is the gate acting
+  # as a control rather than as a report.
   dast:
     name: DAST - OWASP ZAP baseline
     runs-on: ubuntu-latest
-    needs: sast
+    needs: gate
+    if: needs.gate.outputs.status == 'pass'
+    timeout-minutes: 25
+    permissions:
+      contents: read
     services:
       mariadb:
         image: mariadb:10.11
@@ -133,9 +273,9 @@ jobs:
           --health-interval=10s --health-timeout=5s --health-retries=10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5   # v4
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240   # v2
         with:
           php-version: '8.2'
           extensions: mysqli
@@ -144,7 +284,9 @@ jobs:
         run: mysql -h 127.0.0.1 -u root -proot royal_express_db < Database/royal_express_db.sql
 
       # Credentials come from the environment, which is what makes the app
-      # runnable in CI at all - hardcoded localhost/root would fail here.
+      # runnable in CI at all - the hardcoded localhost/root of the baseline
+      # branch would fail here. The configuration seam introduced by the
+      # supporting-control work is a prerequisite of this stage existing.
       - name: Start application
         env:
           DB_HOST: 127.0.0.1
@@ -165,8 +307,90 @@ jobs:
       # already completed successfully. v0.14.0 moved to the current API and
       # v0.15.0 runs on Node 24.
       - name: ZAP baseline scan
-        uses: zaproxy/action-baseline@v0.15.0
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25   # v0.15.0
         with:
           target: 'http://172.17.0.1:8080'
           cmd_options: '-a'
           allow_issue_writing: false
+
+      - name: Upload DAST report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02   # v4
+        with:
+          name: dast-zap-report
+          path: |
+            report_html.html
+            report_json.json
+            report_md.md
+          retention-days: 30
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------- REPORT
+  # Part 1 section 7 proposed GitHub Actions with the expected output
+  # "consolidated automated report". Four tools each dropping their own
+  # artefact is four reports, not one. This job waits for all of them,
+  # succeed or fail, and merges what exists into a single document.
+  report:
+    name: Consolidated security report
+    runs-on: ubuntu-latest
+    needs: [ sast, gate, sca, secrets, dast ]
+    if: always()
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write       # only needed to comment on a pull request
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5   # v4
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065   # v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Collect every artefact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093   # v4
+        with:
+          path: artifacts
+
+      # Job results are passed in explicitly rather than inferred, so the
+      # report can distinguish "passed" from "skipped because an earlier stage
+      # failed" - a distinction that matters when reading the baseline run.
+      - name: Build the consolidated report
+        id: consolidate
+        env:
+          GATE_STATUS:   ${{ needs.gate.outputs.status }}
+          GATE_ERRORS:   ${{ needs.gate.outputs.errors }}
+          GATE_WARNINGS: ${{ needs.gate.outputs.warnings }}
+          GATE_TOTAL:    ${{ needs.gate.outputs.total }}
+          GATE_CUSTOM:   ${{ needs.gate.outputs.custom }}
+          RESULT_SAST:    ${{ needs.sast.result }}
+          RESULT_GATE:    ${{ needs.gate.result }}
+          RESULT_SCA:     ${{ needs.sca.result }}
+          RESULT_SECRETS: ${{ needs.secrets.result }}
+          RESULT_DAST:    ${{ needs.dast.result }}
+        run: |
+          python .github/scripts/consolidate.py artifacts security-report.md
+          cat security-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the consolidated report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02   # v4
+        with:
+          name: consolidated-security-report
+          path: security-report.md
+          retention-days: 90
+
+      # On a pull request the report is posted as a comment, so a reviewer sees
+      # the security position without leaving the pull request.
+      - name: Comment on the pull request
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b   # v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('security-report.md', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body.slice(0, 65000),
+            });
