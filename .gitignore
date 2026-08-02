@@ -6,3 +6,14 @@ dependency-check-report.*
 *_BEFORE.sql
 cookies.txt
 cust.txt
+
+# Python bytecode. gate.py runs on the runner, so __pycache__ appears in
+# the working tree; it was committed by accident and surfaced when .github
+# was copied to the baseline branch.
+__pycache__/
+*.py[cod]
+
+# Scanner output from local runs (CI uploads artefacts instead)
+semgrep-*.json
+security-report.md
+reports/

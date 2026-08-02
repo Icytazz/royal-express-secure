@@ -1,0 +1,26 @@
+# Pinning actions to commit SHAs makes them immutable, which is the point, but
+# immutable also means frozen: a pinned action does not receive security fixes.
+# Dependabot closes that gap by proposing updates as reviewable pull requests,
+# so the choice to move to new code stays explicit rather than happening
+# silently behind a tag.
+#
+# Those pull requests target main, so they run the full pipeline and are
+# themselves gated. A dependency update that would break the security scan
+# cannot merge.
+
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
